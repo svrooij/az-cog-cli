@@ -22,13 +22,22 @@ public partial class BlogPost {
   public DateTimeOffset? DatePublished { get; set; }
 
   [SearchableField(IsFilterable = true, IsFacetable = true)]
-  public string[]? Tags { get; set; }
+  public IEnumerable<string>? Tags { get; set; } = new List<string>() {"None"};
 
   [SearchableField(IsFilterable = true, IsFacetable = true)]
   public string? Category { get; set; }
 
-  [SearchableField]
+  [SearchableField(IsHidden = true)]
   [JsonPropertyName("content_text")]
   public string? Content { get; set; }
+
+  public override string ToString()
+  {
+      return $"{Title} [{string.Join(", ", Tags)}]";
+  }
+
+  internal void FixCollections() {
+    Tags ??= new List<string>{"None"};
+  }
 
 }

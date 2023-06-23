@@ -7,10 +7,13 @@
     "request": "launch",
     "preLaunchTask": "build",
     "program": "${workspaceFolder}/bin/Debug/net6.0/az-cog-cli.dll",
-    "args": ["admin"],
+    // "args": ["index", "folder", "C:\\Users\\stephan\\source\\repos\\blog-site\\public\\2023"],
+    // "args": ["admin", "create", "blog-1"],
     "cwd": "${workspaceFolder}",
     "stopAtEntry": false,
-    "console": "internalConsole"
+    "console": "internalConsole",
+    "env": {},
+    "envFile": "${workspaceFolder}/.env"
   },
     {
       "name": ".NET Core Attach",

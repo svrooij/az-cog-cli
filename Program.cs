@@ -7,7 +7,8 @@ class Program
     {
         var rootCommand = new RootCommand("Azure Cognitive Search CLI");
 
-        rootCommand.AddCommand(new Commands.Admin.AdminCommand());
+        rootCommand.AddCommand(new Commands.Admin.AdminRootCommand());
+        rootCommand.AddCommand(new Commands.Index.IndexRootCommand());
 
         await rootCommand.InvokeAsync(args);
     }
