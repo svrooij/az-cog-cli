@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+  {
+    "name": ".NET Core Launch (console)",
+    "type": "coreclr",
+    "request": "launch",
+    "preLaunchTask": "build",
+    "program": "${workspaceFolder}/bin/Debug/net6.0/az-cog-cli.dll",
+    "args": ["admin"],
+    "cwd": "${workspaceFolder}",
+    "stopAtEntry": false,
+    "console": "internalConsole"
+  },
+    {
+      "name": ".NET Core Attach",
+      "type": "coreclr",
+      "request": "attach"
+    }
+  ]
+}
