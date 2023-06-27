@@ -7,7 +7,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/az-cog-cli.csproj",
+        "${workspaceFolder}/src/az-cog-cli/az-cog-cli.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -19,7 +19,7 @@
       "type": "process",
       "args": [
         "publish",
-        "${workspaceFolder}/az-cog-cli.csproj",
+        "${workspaceFolder}/src/az-cog-cli/az-cog-cli.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -33,7 +33,7 @@
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/az-cog-cli.csproj"
+        "${workspaceFolder}/src/az-cog-cli/az-cog-cli.csproj"
       ],
       "problemMatcher": "$msCompile"
     }
