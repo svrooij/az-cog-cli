@@ -26,6 +26,22 @@
       "problemMatcher": "$msCompile"
     },
     {
+      "label": "publish-docker",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish",
+        "${workspaceFolder}/src/az-cog-cli/az-cog-cli.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary",
+        "--os", "linux",
+        "--arch", "x64",
+        "-c", "Release",
+        "/t:PublishContainer"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "watch",
       "command": "dotnet",
       "type": "process",
