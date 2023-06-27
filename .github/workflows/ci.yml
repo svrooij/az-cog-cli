@@ -1,0 +1,51 @@
+name: Azure Cognitive Search pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - feature/first-release
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - 
+        name: Setup .NET SDK 7.x
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.x
+      - 
+        name: Build CLI
+        run: dotnet build ./src/az-cog-cli/az-cog-cli.csproj
+      - 
+        name: Run CLI without arguments
+        run: dotnet run --no-build --project ./src/az-cog-cli/az-cog-cli.csproj
+      - 
+        name: Run CLI with Index argument
+        run: dotnet run --no-build --project ./src/az-cog-cli/az-cog-cli.csproj index
+  
+  release-docker:
+    runs-on: unbuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v3
+
+      - 
+        name: Setup .NET SDK 7.x
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.x
+      - 
+        name: Build docker container
+        run: dotnet publish --os linux --arch x64 -c Release /t:PublishContainer
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+  
