@@ -28,7 +28,7 @@ jobs:
         run: dotnet run --no-build --project ./src/az-cog-cli/az-cog-cli.csproj index
   
   release-docker:
-    runs-on: unbuntu-latest
+    runs-on: ubuntu-latest
     needs: [test]
     steps:
       - uses: actions/checkout@v3
