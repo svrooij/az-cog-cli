@@ -5,7 +5,8 @@ on:
     branches:
       - main
       - feature/first-release
-
+  workflow_dispatch:
+    
 jobs:
   test:
     runs-on: ubuntu-latest
