@@ -1,0 +1,49 @@
+name: 'Azure Cognitive Search Index'
+description: 'Index local json files and send them to your Azure Cognitive Search Service'
+# Some branding details
+branding:
+  icon: search
+  color: orange
+# Inputs for this action
+inputs:
+  folder:
+    description:
+      'The location of the folder to index'
+    required: true
+  endpoint:
+    description:
+      'The endpoint of your Azure Search Service'
+    required: true
+  apiKey:
+    description:
+      'The Admin API Key, needed for uploading documents'
+    required: true
+  query:
+    description:
+      'What files to look for'
+    required: false
+    default: 'index.json'
+  index:
+    description:
+      'IndexName to send the items to'
+    required: false
+    default: 'blog-1'
+# Define one or more outputs defined by your action
+# outputs:
+#   files-updated:
+#     description:
+#       'Wether or not there where files updated, to conditionally trigger a commit'
+# How to run this action
+runs:
+  using: 'docker' # This is a docker container
+  image: 'docker://ghcr.io/svrooij/az-cog-cli:dev' # container location, prefixed with docker:// (which is very important!)
+  args: # Zero or more arguments to pass, as if you would run locally.
+    - 'index'
+    - '--query'
+    - ${{ inputs.query }}
+    - '--index'
+    - ${{ inputs.index }}
+  env:
+    AZURE__SEARCH__ENDPOINT: ${{ inputs.endpoint }}
+    AZURE__SEARCH__ADMINKEY: ${{ inputs.apiKey }}
+

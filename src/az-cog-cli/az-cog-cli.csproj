@@ -6,11 +6,19 @@
     <RootNamespace>az_cog_cli</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ContainerImageName>svrooij/az-cog-cli</ContainerImageName>
+    <ContainerImageTag>latest</ContainerImageTag>
+    <ContainerBaseImage>mcr.microsoft.com/dotnet/nightly/runtime:6.0-jammy-chiseled</ContainerBaseImage>
+  </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <NoWarn>CS8604;CS8618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Search.Documents" Version="11.4.0" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="Microsoft.NET.Build.Containers" Version="7.0.305"/>
   </ItemGroup>
 
 </Project>

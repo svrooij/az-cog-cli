@@ -7,7 +7,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/az-cog-cli.csproj",
+        "${workspaceFolder}/src/az-cog-cli/az-cog-cli.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -19,9 +19,25 @@
       "type": "process",
       "args": [
         "publish",
-        "${workspaceFolder}/az-cog-cli.csproj",
+        "${workspaceFolder}/src/az-cog-cli/az-cog-cli.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish-docker",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish",
+        "${workspaceFolder}/src/az-cog-cli/az-cog-cli.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary",
+        "--os", "linux",
+        "--arch", "x64",
+        "-c", "Release",
+        "/t:PublishContainer"
       ],
       "problemMatcher": "$msCompile"
     },
@@ -33,7 +49,7 @@
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/az-cog-cli.csproj"
+        "${workspaceFolder}/src/az-cog-cli/az-cog-cli.csproj"
       ],
       "problemMatcher": "$msCompile"
     }
