@@ -58,5 +58,41 @@ Index local json files and send them to your Azure Cognitive Search Service
 
 Set the `endpoint` and `apiKey` through secrets e.g. `endpoint: ${{ secrets.AZURE_SEARCH_ENDPOINT }}`
 
-<!-- start outputs -->
-<!-- end outputs -->
+## Docker: Azure Cognitive Search Index
+
+This app is also published as a docker container, you can run as follows.
+
+Use `{platform-specific-part} index folder {location-of-mapped-folder} --endpoint https://{searchService}.search.windows.net --apiKey xxx`
+
+Or run `docker run --rm ghcr.io/svrooij/az-cog-cli:dev index folder --help` for more details.
+
+```text
+> docker run --rm ghcr.io/svrooij/az-cog-cli:dev index folder --help
+Description:
+  Add data in a folder to your index
+
+Usage:
+  az-cog-cli index folder <folder> [options]
+
+Arguments:
+  <folder>  Folder to look for files
+
+Options:
+  --query <query>        What files to look for [default: index.json]
+  --index <index>        Which index shall be used? [default: blog-1]
+  --endpoint <endpoint>  Specify the endpoint
+  --apiKey <apiKey>      Specify the Admin API Key
+  -?, -h, --help         Show help and usage information
+```
+
+### Windows (using PowerShell)
+
+```PowerShell
+docker run --rm -v ${PWD}:/usr/my-folder ghcr.io/svrooij/az-cog-cli index folder /usr/my-folder --endpoint https://{searchService}.search.windows.net --apiKey xxx
+```
+
+### Linux
+
+```bash
+docker run --rm -v $(pwd):/usr/my-folder ghcr.io/svrooij/az-cog-cli index folder /usr/my-folder --endpoint https://{searchService}.search.windows.net --apiKey xxx
+```
