@@ -19,13 +19,13 @@ jobs:
           dotnet-version: 7.x
       - 
         name: Build CLI
-        run: dotnet build ./src/az-cog-cli/az-cog-cli.csproj
+        run: dotnet build ./src/az-cog-cli/az-cog-cli.csproj /consoleloggerparameters:NoSummary -c Release
       - 
         name: Run CLI without arguments
-        run: dotnet run --no-build --project ./src/az-cog-cli/az-cog-cli.csproj
+        run: dotnet run --no-build --project ./src/az-cog-cli/az-cog-cli.csproj -c Release
       - 
         name: Run CLI with Index argument
-        run: dotnet run --no-build --project ./src/az-cog-cli/az-cog-cli.csproj index
+        run: dotnet run -c Release --no-build --project ./src/az-cog-cli/az-cog-cli.csproj index
   
   release-docker:
     runs-on: ubuntu-latest
@@ -43,9 +43,20 @@ jobs:
         run: dotnet publish ./src/az-cog-cli/az-cog-cli.csproj --os linux --arch x64 -c Release /t:PublishContainer
       -
         name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - 
+        name: Tag image for ghct (dev)
+        run: docker image tag svrooij/az-cog-cli:latest ghcr.io/svrooij/az-cog-cli:dev
+      - 
+        name: Tag image for ghct (latest)
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        run: docker image tag svrooij/az-cog-cli:latest ghcr.io/svrooij/az-cog-cli:latest
+      -
+        name: Push to GHCR
+        run: docker image push --all-tags ghcr.io/svrooij/az-cog-cli
+      
   
