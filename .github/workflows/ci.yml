@@ -40,7 +40,7 @@ jobs:
           dotnet-version: 7.x
       - 
         name: Build docker container
-        run: dotnet publish --os linux --arch x64 -c Release /t:PublishContainer
+        run: dotnet publish ./src/az-cog-cli/az-cog-cli.csproj --os linux --arch x64 -c Release /t:PublishContainer
       -
         name: Login to GitHub Container Registry
         uses: docker/login-action@v1
