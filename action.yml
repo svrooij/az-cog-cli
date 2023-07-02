@@ -45,7 +45,11 @@ runs:
     - ${{ inputs.query }}
     - '--index'
     - ${{ inputs.index }}
-  env:
-    AZURE__SEARCH__ENDPOINT: ${{ inputs.endpoint }}
-    AZURE__SEARCH__ADMINKEY: ${{ inputs.apiKey }}
+    - '--endpoint'
+    - ${{ inputs.endpoint }}
+    - '--apiKey'
+    - ${{ inputs.apiKey }}
+  # env:
+  #   AZURE__SEARCH__ENDPOINT: ${{ inputs.endpoint }}
+  #   AZURE__SEARCH__ADMINKEY: ${{ inputs.apiKey }}
 
