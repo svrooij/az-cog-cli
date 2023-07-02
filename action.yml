@@ -39,6 +39,7 @@ runs:
   image: 'docker://ghcr.io/svrooij/az-cog-cli:dev' # container location, prefixed with docker:// (which is very important!)
   args: # Zero or more arguments to pass, as if you would run locally.
     - 'index'
+    - 'folder'
     - '--query'
     - ${{ inputs.query }}
     - '--index'
