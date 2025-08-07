@@ -1,69 +1,72 @@
-name: Azure Cognitive Search pipeline
+name: 🧪 ➡️ 📦✈️ Test and release az-cog-cli
 
 on:
   push:
     branches:
       - main
-      - feature/first-release
+      - "2025-8"
   workflow_dispatch:
     
 jobs:
   test:
+    name: 🧪 Try building and running
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        name: 🔃 Check-out
 
       - 
-        name: Setup .NET SDK 7.x
-        uses: actions/setup-dotnet@v3
+        name: 📐 Setup .NET SDK 8.x
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 7.x
+          dotnet-version: 8.x
       - 
-        name: Build CLI
+        name: 🏗️ Build CLI
         run: dotnet build ./src/az-cog-cli/az-cog-cli.csproj /consoleloggerparameters:NoSummary -c Release
       - 
-        name: Run CLI without arguments
+        name: 🏃‍♂️‍➡️ Run CLI without arguments
         run: dotnet run --no-build --project ./src/az-cog-cli/az-cog-cli.csproj -c Release
       - 
-        name: Run CLI with Index argument
+        name: 🏃‍♂️‍➡️ Run CLI with Index argument
         run: dotnet run -c Release --no-build --project ./src/az-cog-cli/az-cog-cli.csproj index
   
   release-docker:
+    name: ✈️📦 Release container
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
     needs: [test]
     steps:
-      - uses: actions/checkout@v3
-
+      - uses: actions/checkout@v4
+        name: 🔃 Check-out
       - 
-        name: Setup .NET SDK 7.x
-        uses: actions/setup-dotnet@v3
+        name: 📐 Setup .NET SDK 8.x
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 7.x
+          dotnet-version: 8.x
       - 
-        name: Build docker container
+        name: 🏗️ Build docker container
         run: dotnet publish ./src/az-cog-cli/az-cog-cli.csproj --os linux --arch x64 -c Release /t:PublishContainer
       -
-        name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        name: 🔑 Login to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - 
-        name: Tag image for ghct (svrooij/az-cog-cli:dev)
-        run: docker image tag svrooij/az-cog-cli:latest ghcr.io/svrooij/az-cog-cli:dev
+        name: 🏷️ Tag image (svrooij/az-cog-cli:dev)
+        run: docker image tag svrooij/az-cog-cli:latest ghcr.io/svrooij/az-cog-cli:2025-8
       - 
-        name: Tag image for ghct (svrooij/az-cog-cli:${{ github.sha }})
+        name: 🏷️ Tag image (svrooij/az-cog-cli:${{ github.sha }})
         run: docker image tag svrooij/az-cog-cli:latest ghcr.io/svrooij/az-cog-cli:${{ github.sha }}
       - 
-        name: Tag image for ghct (svrooij/az-cog-cli:latest)
+        name: 🏷️ Tag image (svrooij/az-cog-cli:latest)
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: docker image tag svrooij/az-cog-cli:latest ghcr.io/svrooij/az-cog-cli:latest
       -
-        name: Push to GHCR
+        name: ✈️📦 Push to GHCR
         run: docker image push --all-tags ghcr.io/svrooij/az-cog-cli
       
   
