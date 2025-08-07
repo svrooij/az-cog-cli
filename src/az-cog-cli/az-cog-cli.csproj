@@ -6,7 +6,8 @@
     <RootNamespace>az_cog_cli</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <ContainerImageName>svrooij/az-cog-cli</ContainerImageName>
+    <ContainerRepository>svrooij/az-cog-cli</ContainerRepository>
+    <ContainerImageTag>latest</ContainerImageTag>
     <ContainerBaseImage>mcr.microsoft.com/dotnet/runtime:8.0-noble-chiseled</ContainerBaseImage>
   </PropertyGroup>
 
