@@ -4,7 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace AzCogCli.Models;
 
-public partial class BlogPost {
+public partial class BlogPost
+{
   [SimpleField(IsKey = true, IsFilterable = true)]
   public string Id { get; set; }
 
@@ -22,7 +23,7 @@ public partial class BlogPost {
   public DateTimeOffset? DatePublished { get; set; }
 
   [SearchableField(IsFilterable = true, IsFacetable = true)]
-  public IEnumerable<string>? Tags { get; set; } = new List<string>() {"None"};
+  public IEnumerable<string>? Tags { get; set; } = new List<string>() { "None" };
 
   [SearchableField(IsFilterable = true, IsFacetable = true)]
   public string? Category { get; set; }
@@ -33,11 +34,18 @@ public partial class BlogPost {
 
   public override string ToString()
   {
-      return $"{Title} [{string.Join(", ", Tags)}]";
+    return $"{Title} [{string.Join(", ", Tags)}]";
   }
 
-  internal void FixCollections() {
-    Tags ??= new List<string>{"None"};
+  internal void FixCollections()
+  {
+    Tags ??= new List<string> { "None" };
   }
+  
+  [VectorSearchField(VectorSearchDimensions = 1536, VectorSearchProfileName = "my-vector-profile")]
+  public ReadOnlyMemory<float>? TitleVector { get; set; }
+
+  [VectorSearchField(VectorSearchDimensions = 1536, VectorSearchProfileName = "my-vector-profile")]
+  public ReadOnlyMemory<float>? ContentVector { get; set; }
 
 }
