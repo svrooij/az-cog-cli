@@ -1,63 +1,104 @@
 using System.CommandLine;
-using Azure.Search.Documents.Indexes;
+using System.CommandLine.Invocation;
 using Azure.Search.Documents.Indexes.Models;
+using AzCogCli.Extensions;
 
 namespace AzCogCli.Commands.Admin;
 
-public class CreateCommand: Command {
-  public CreateCommand(): base("create", "Create the index in your search service")
+public sealed class CreateCommand: Command {
+  private readonly Argument<string> indexNameArgument;
+  private readonly Option<bool> enableVectorSearchOption;
+  
+  public CreateCommand(): base("create", "Create the index in your search service 🔍")
   {
-    var indexNameArgument = new Argument<string>("indexName", "Name of the index to create");
-    var enableVectorSearchOption = new Option<bool>("--enable-vector-search", "Enable vector search capabilities (increases storage costs)");
+    // Define the arguments and options for the command
+    // This allows users to specify the index name and whether to enable vector search
+    indexNameArgument = new Argument<string>("indexName", "Name of the index to create");
+    enableVectorSearchOption = new Option<bool>("--enable-vector-search", "Enable vector search capabilities (increases storage costs)");
     
     AddArgument(indexNameArgument);
     AddOption(enableVectorSearchOption);
-    this.SetHandler(handleCommand, indexNameArgument, enableVectorSearchOption);
+    this.SetHandler(handleCommandWithContext);
   }
 
-  private async Task handleCommand(string indexName, bool enableVectorSearch) {
-    var client = SearchClientCreator.CreateSearchIndexClient();
-    var fieldBuilder = new FieldBuilder();
-    var searchFields = fieldBuilder.Build(typeof(Models.BlogPost));
+  private async Task handleCommandWithContext(InvocationContext context)
+  {
+    var indexName = context.ParseResult.GetValueForArgument(indexNameArgument);
+    var enableVectorSearch = context.ParseResult.GetValueForOption(enableVectorSearchOption);
+    var cancellationToken = context.GetCancellationToken();
     
-    var definition = new SearchIndex(indexName, searchFields);
-    
-    // Only add vector search configuration if explicitly enabled
-    if (enableVectorSearch)
-    {
-      definition.VectorSearch = new VectorSearch()
-      {
-        Profiles =
-        {
-          new VectorSearchProfile("my-vector-profile", "my-hnsw-config")
-        },
-        Algorithms =
-        {
-          new HnswAlgorithmConfiguration("my-hnsw-config")
-        }
-      };
-      
-      definition.SemanticSearch = new SemanticSearch()
-      {
-        Configurations =
-        {
-          new SemanticConfiguration("my-semantic-config", new()
-          {
-            TitleField = new SemanticField("Title"),
-            ContentFields =
-            {
-              new SemanticField("Content")
-            },
-            KeywordsFields =
-            {
-              new SemanticField("Tags"),
-              new SemanticField("Category")
-            }
-          })
-        }
-      };
-    }
+    await handleCommand(indexName, enableVectorSearch, cancellationToken);
+  }
 
-    await client.CreateOrUpdateIndexAsync(definition, true);
+  private async Task handleCommand(string indexName, bool enableVectorSearch, CancellationToken cancellationToken = default) {
+    try 
+    {
+      Console.WriteLine($"Creating index '{indexName}'...");
+      if (enableVectorSearch)
+      {
+        Console.WriteLine("Vector search enabled - this may take longer and increase costs.");
+      }
+      
+      var client = SearchClientCreator.CreateSearchIndexClient();
+      
+      // Use our custom field builder that handles vector fields conditionally
+      var searchFields = BlogPostExtensions.CreateSearchFields(enableVectorSearch);
+      
+      var definition = new SearchIndex(indexName, searchFields);
+      
+      // Only add vector search configuration if explicitly enabled
+      if (enableVectorSearch)
+      {
+        definition.VectorSearch = new VectorSearch()
+        {
+          Profiles =
+          {
+            new VectorSearchProfile("my-vector-profile", "my-hnsw-config")
+          },
+          Algorithms =
+          {
+            new HnswAlgorithmConfiguration("my-hnsw-config")
+          }
+        };
+        
+        definition.SemanticSearch = new SemanticSearch()
+        {
+          Configurations =
+          {
+            new SemanticConfiguration("my-semantic-config", new()
+            {
+              TitleField = new SemanticField("Title"),
+              ContentFields =
+              {
+                new SemanticField("Content")
+              },
+              KeywordsFields =
+              {
+                new SemanticField("Tags"),
+                new SemanticField("Category")
+              }
+            })
+          }
+        };
+      }
+
+      await client.CreateOrUpdateIndexAsync(definition, allowIndexDowntime: true, cancellationToken: cancellationToken);
+      
+      Console.WriteLine($"Index '{indexName}' created successfully!");
+      if (enableVectorSearch)
+      {
+        Console.WriteLine("Vector search and semantic search are now enabled.");
+      }
+    }
+    catch (OperationCanceledException)
+    {
+      Console.WriteLine("Index creation was cancelled by user.");
+      throw; // Re-throw to maintain proper cancellation behavior
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine($"Error creating index: {ex.Message}");
+      throw; // Re-throw to maintain proper error handling
+    }
   }
 }

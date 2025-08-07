@@ -42,10 +42,10 @@ public partial class BlogPost
     Tags ??= new List<string> { "None" };
   }
   
-  [VectorSearchField(VectorSearchDimensions = 1536, VectorSearchProfileName = "my-vector-profile")]
+  // Vector fields - only included when vector search is enabled in the index
+  // These properties will be ignored by FieldBuilder if not properly configured
   public ReadOnlyMemory<float>? TitleVector { get; set; }
 
-  [VectorSearchField(VectorSearchDimensions = 1536, VectorSearchProfileName = "my-vector-profile")]
   public ReadOnlyMemory<float>? ContentVector { get; set; }
 
 }
