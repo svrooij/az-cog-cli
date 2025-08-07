@@ -36,7 +36,7 @@ inputs:
 # How to run this action
 runs:
   using: 'docker' # This is a docker container
-  image: 'docker://ghcr.io/svrooij/az-cog-cli:dev' # container location, prefixed with docker:// (which is very important!)
+  image: 'docker://ghcr.io/svrooij/az-cog-cli:2025-8' # container location, prefixed with docker:// (which is very important!)
   args: # Zero or more arguments to pass, as if you would run locally.
     - 'index'
     - 'folder'
