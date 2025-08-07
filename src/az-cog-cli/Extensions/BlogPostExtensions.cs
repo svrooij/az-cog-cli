@@ -110,4 +110,81 @@ public static class BlogPostExtensions
             .Select(post => post.ToSearchDocument(vectorSearchEnabled))
             .Chunk(batchSize);
     }
+    
+    /// <summary>
+    /// Converts BlogPost to a dynamic object based on actual index schema
+    /// This ensures only fields that exist in the target index are included
+    /// </summary>
+    public static object ToSearchDocument(this BlogPost post, SearchIndex indexSchema)
+    {
+        var doc = new Dictionary<string, object?>();
+        
+        // Create a mapping of BlogPost properties to their potential field names
+        var propertyMappings = new Dictionary<string, Func<BlogPost, object?>>
+        {
+            ["Id"] = p => p.Id,
+            ["Title"] = p => p.Title,
+            ["Description"] = p => p.Description,
+            ["Url"] = p => p.Url,
+            ["date_published"] = p => p.DatePublished,
+            ["Tags"] = p => p.Tags,
+            ["Category"] = p => p.Category,
+            ["content_text"] = p => p.Content,
+            ["TitleVector"] = p => p.TitleVector?.ToArray(),
+            ["ContentVector"] = p => p.ContentVector?.ToArray()
+        };
+        
+        // Only include fields that exist in the target index schema
+        foreach (var field in indexSchema.Fields)
+        {
+            if (propertyMappings.TryGetValue(field.Name, out var getValue))
+            {
+                var value = getValue(post);
+                if (value != null)
+                {
+                    doc[field.Name] = value;
+                }
+            }
+        }
+        
+        return doc;
+    }
+    
+    /// <summary>
+    /// Gets information about field mapping for logging purposes
+    /// </summary>
+    public static string GetFieldMappingInfo(SearchIndex indexSchema)
+    {
+        var availableFields = new[]
+        {
+            "Id", "Title", "Description", "Url", "date_published", 
+            "Tags", "Category", "content_text", "TitleVector", "ContentVector"
+        };
+        
+        var mappedFields = indexSchema.Fields
+            .Where(f => availableFields.Contains(f.Name))
+            .Select(f => f.Name)
+            .ToList();
+            
+        var vectorFields = mappedFields.Where(f => f.Contains("Vector")).ToList();
+        var regularFields = mappedFields.Where(f => !f.Contains("Vector")).ToList();
+        
+        var info = $"Mapped {mappedFields.Count} fields: {string.Join(", ", regularFields)}";
+        if (vectorFields.Any())
+        {
+            info += $" + {vectorFields.Count} vector field(s): {string.Join(", ", vectorFields)}";
+        }
+        
+        return info;
+    }
+    
+    /// <summary>
+    /// Converts a collection of BlogPost objects to search documents with batching based on index schema
+    /// </summary>
+    public static IEnumerable<IEnumerable<object>> ToSearchDocumentBatches(this IEnumerable<BlogPost> posts, SearchIndex indexSchema, int batchSize = 1000)
+    {
+        return posts
+            .Select(post => post.ToSearchDocument(indexSchema))
+            .Chunk(batchSize);
+    }
 }

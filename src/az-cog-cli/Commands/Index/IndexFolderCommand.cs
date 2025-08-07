@@ -3,6 +3,7 @@ using System.CommandLine.Invocation;
 using System.Text.Json;
 using Azure.Search.Documents.Models;
 using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Indexes.Models;
 using AzCogCli.Extensions;
 
 namespace AzCogCli.Commands.Index;
@@ -54,21 +55,39 @@ public class IndexFolderCommand: Command {
     {
       Console.WriteLine($"🔍 Searching for files matching '{query}' in folder: {folder}");
       
-      // Check if the target index supports vector search (unless forced)
+      // Get the actual index schema to determine available fields
       var indexClient = SearchClientCreator.CreateSearchIndexClient(endpoint, apiKey);
-      var vectorSearchEnabled = forceVectorSearch || await CheckVectorSearchSupport(indexClient, indexName, cancellationToken);
+      SearchIndex? indexSchema = null;
       
-      if (forceVectorSearch)
+      try 
       {
-        Console.WriteLine("🔧 Vector search forced via command line option");
+        var indexResponse = await indexClient.GetIndexAsync(indexName, cancellationToken);
+        indexSchema = indexResponse.Value;
+        Console.WriteLine($"📋 Retrieved index schema for '{indexName}' with {indexSchema.Fields.Count} fields");
+        
+        // Show detailed field mapping information
+        var mappingInfo = BlogPostExtensions.GetFieldMappingInfo(indexSchema);
+        Console.WriteLine($"� {mappingInfo}");
       }
-      else if (vectorSearchEnabled)
+      catch (Exception ex)
       {
-        Console.WriteLine("📊 Target index supports vector search - vector fields will be included");
-      }
-      else
-      {
-        Console.WriteLine("📄 Target index uses traditional search - vector fields will be excluded");
+        Console.WriteLine($"⚠️  Could not retrieve index schema for '{indexName}': {ex.Message}");
+        Console.WriteLine("📄 Falling back to basic field detection");
+        
+        // Fallback to the old method if we can't get the schema
+        var vectorSearchEnabled = forceVectorSearch || await CheckVectorSearchSupport(indexClient, indexName, cancellationToken);
+        if (forceVectorSearch)
+        {
+          Console.WriteLine("🔧 Vector search forced via command line option");
+        }
+        else if (vectorSearchEnabled)
+        {
+          Console.WriteLine("📊 Target index supports vector search - vector fields will be included");
+        }
+        else
+        {
+          Console.WriteLine("📄 Target index uses traditional search - vector fields will be excluded");
+        }
       }
       
       var files = Directory.GetFiles(folder, query, SearchOption.AllDirectories);
@@ -98,8 +117,22 @@ public class IndexFolderCommand: Command {
         }
 
         if (collection.Any()) {
-          // Process documents in batches for better performance and memory usage
-          var batches = collection.ToSearchDocumentBatches(vectorSearchEnabled, batchSize: 1000);
+          // Process documents using schema-based approach if available, otherwise fallback
+          IEnumerable<IEnumerable<object>> batches;
+          
+          if (indexSchema != null)
+          {
+            Console.WriteLine($"📦 Using schema-based field mapping for {collection.Count} documents");
+            batches = collection.ToSearchDocumentBatches(indexSchema, batchSize: 1000);
+          }
+          else
+          {
+            // Fallback to the boolean-based approach
+            var vectorSearchEnabled = forceVectorSearch || await CheckVectorSearchSupport(indexClient, indexName, cancellationToken);
+            Console.WriteLine($"📦 Using fallback field mapping for {collection.Count} documents");
+            batches = collection.ToSearchDocumentBatches(vectorSearchEnabled, batchSize: 1000);
+          }
+          
           var totalBatches = batches.Count();
           var currentBatch = 0;
           
