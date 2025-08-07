@@ -27,10 +27,10 @@ public sealed class CreateCommand: Command {
     var enableVectorSearch = context.ParseResult.GetValueForOption(enableVectorSearchOption);
     var cancellationToken = context.GetCancellationToken();
     
-    await handleCommand(indexName, enableVectorSearch, cancellationToken);
+    await handleCommand(indexName, enableVectorSearch, context, cancellationToken);
   }
 
-  private async Task handleCommand(string indexName, bool enableVectorSearch, CancellationToken cancellationToken = default) {
+  private async Task handleCommand(string indexName, bool enableVectorSearch, InvocationContext context, CancellationToken cancellationToken = default) {
     try 
     {
       Console.WriteLine($"Creating index '{indexName}'...");
@@ -70,7 +70,7 @@ public sealed class CreateCommand: Command {
               TitleField = new SemanticField("Title"),
               ContentFields =
               {
-                new SemanticField("Content")
+                new SemanticField("content_text")
               },
               KeywordsFields =
               {
@@ -84,20 +84,22 @@ public sealed class CreateCommand: Command {
 
       await client.CreateOrUpdateIndexAsync(definition, allowIndexDowntime: true, cancellationToken: cancellationToken);
       
-      Console.WriteLine($"Index '{indexName}' created successfully!");
+      Console.WriteLine($"✅ Index '{indexName}' created successfully!");
       if (enableVectorSearch)
       {
-        Console.WriteLine("Vector search and semantic search are now enabled.");
+        Console.WriteLine("📇 Vector search and semantic search are now enabled.");
       }
     }
     catch (OperationCanceledException)
     {
-      Console.WriteLine("Index creation was cancelled by user.");
+      Console.WriteLine("🛑 Index creation was cancelled by user.");
+      context.ExitCode = 10; // Set exit code to indicate cancellation
       throw; // Re-throw to maintain proper cancellation behavior
     }
     catch (Exception ex)
     {
-      Console.WriteLine($"Error creating index: {ex.Message}");
+      Console.WriteLine($"❌ Error creating index: {ex.Message}");
+      context.ExitCode = 1;
       throw; // Re-throw to maintain proper error handling
     }
   }

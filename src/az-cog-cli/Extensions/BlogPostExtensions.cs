@@ -15,13 +15,16 @@ public static class BlogPostExtensions
     {
         var fieldBuilder = new FieldBuilder();
         var fields = fieldBuilder.Build(typeof(BlogPost)).ToList();
+
+        // Remove any vector fields if they exist (in case FieldBuilder picked them up)
+        fields.RemoveAll(f => f.Name == "TitleVector" || f.Name == "ContentVector");
         
         if (enableVectorSearch)
         {
             // Add vector fields manually when vector search is enabled
             var titleVectorField = new SearchField("TitleVector", SearchFieldDataType.Collection(SearchFieldDataType.Single))
             {
-                IsSearchable = false,
+                IsSearchable = true,
                 IsFilterable = false,
                 IsSortable = false,
                 IsFacetable = false,
@@ -31,7 +34,7 @@ public static class BlogPostExtensions
             
             var contentVectorField = new SearchField("ContentVector", SearchFieldDataType.Collection(SearchFieldDataType.Single))
             {
-                IsSearchable = false,
+                IsSearchable = true,
                 IsFilterable = false,
                 IsSortable = false,
                 IsFacetable = false,
@@ -41,11 +44,6 @@ public static class BlogPostExtensions
             
             fields.Add(titleVectorField);
             fields.Add(contentVectorField);
-        }
-        else
-        {
-            // Remove any vector fields if they exist (in case FieldBuilder picked them up)
-            fields.RemoveAll(f => f.Name == "TitleVector" || f.Name == "ContentVector");
         }
         
         return fields.ToArray();
